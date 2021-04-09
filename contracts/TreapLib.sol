@@ -97,10 +97,11 @@ library TreapLib {
     int midId = self.nodeIdCounter ++;
     
     _split(self, rootId, leftId, rightId, index - 1, 0);
-    _split(self, rightId, midId, rightId, index, 0);
+    _split(self, rightId, midId, rightId, index + 1, 0);
 
     int val = _getValue(self, midId);    
-
+    console.log("val: %d", uint(val));
+    console.log("size: %d", uint(_getSize(self, val)));
     _merge(self, leftId, leftId, midId);
     _merge(self, rootId, leftId, rightId);
     return val;

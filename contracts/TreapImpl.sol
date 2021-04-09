@@ -33,7 +33,7 @@ contract TreapImpl {
      _lastAccessedValue = _treap.get(index);
   }
 
-  function getLast()
+  function getLastAccessed()
     public
     view
     returns (int)
