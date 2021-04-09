@@ -15,7 +15,7 @@ library TreapLib {
     int leftNodeId;
     int rightNodeId;
   }
-  int private constant NULL = 0;
+  int private constant NULL = -1;
 
   struct Treap {
     int rootId;
@@ -28,11 +28,11 @@ library TreapLib {
   function init(Treap storage self)
     public
   {
-    self.rootId = 1;
-    self.nodeIdCounter = 2;
+    self.rootId = 0;
+    self.nodeIdCounter = 1;
  
     self.nodeIdToIndex[self.rootId] = NULL;
-
+    /*
     self.nodes.push(Node({
       value: 0,
       min: 0,
@@ -43,6 +43,7 @@ library TreapLib {
       rightNodeId: 0,
       priority: 0
     }));
+    */
   }
 
   function length(Treap storage self) 
@@ -51,12 +52,24 @@ library TreapLib {
     returns (int)
   {
     int curIndex = self.nodeIdToIndex[self.rootId];
-    if (curIndex == 0) {
+    if (curIndex == NULL) {
       return 0;
     }
 
     Node storage root = self.nodes[uint(curIndex)];
     return root.size;
+  }
+
+  function _getSize(Treap storage self, int curNodeId) 
+    private
+    view
+    returns (int) 
+  {
+    int curIndex = self.nodeIdToIndex[curNodeId];
+    if (curIndex == NULL) {
+      return 0;
+    }
+    return self.nodes[uint(curIndex)].size;
   }
 
   function _getValue(Treap storage self, int curNodeId)
@@ -66,7 +79,7 @@ library TreapLib {
   {
     int curIndex = self.nodeIdToIndex[curNodeId];
     if (curIndex == NULL) {
-      return -1;
+      return -111111;
     }
 
     Node memory node = self.nodes[uint(curIndex)];
@@ -81,30 +94,19 @@ library TreapLib {
     int leftId = self.nodeIdCounter ++;
     int rightId = self.nodeIdCounter ++;
     int midId = self.nodeIdCounter ++;
+    self.nodeIdToIndex[leftId] = NULL;
+    self.nodeIdToIndex[rightId] = NULL;
+    self.nodeIdToIndex[midId] = NULL;
     
     _split(self, rootId, leftId, rightId, index - 1, 0);
-    _split(self, rightId, midId, rightId, index + 1, 0);
+    _split(self, rightId, midId, rightId, index, 0);
 
     int val = _getValue(self, midId);    
     console.log("val: %d", uint(val));
-    console.log("size: %d", uint(_getSize(self, val)));
+    console.log("size: %d", uint(_getSize(self, midId)));
     _merge(self, leftId, leftId, midId);
     _merge(self, rootId, leftId, rightId);
     return val;
-  }
-
-  function getRight(Treap storage self, int curNodeId)
-    public
-    view
-    returns (int)
-  {
-    int curIndex = self.nodeIdToIndex[curNodeId];
-    if (curIndex == NULL) {
-      return -1;
-    }
-
-    Node memory node = self.nodes[uint(curIndex)];
-    return node.rightNodeId;
   }
 
   function traverseAndShow(Treap storage self, int curNodeId)
@@ -132,8 +134,13 @@ library TreapLib {
     returns (bool)
   {      
     int nodeId = self.nodeIdCounter ++;
+    int leftNodeId = self.nodeIdCounter ++;
+    int rightNodeId = self.nodeIdCounter ++;
     int nodeIndex = int(self.nodes.length);
+    
     self.nodeIdToIndex[nodeId] = nodeIndex;
+    self.nodeIdToIndex[leftNodeId] = NULL;
+    self.nodeIdToIndex[rightNodeId] = NULL;
     
     self.nodes.push(Node({
       value: data,
@@ -141,14 +148,17 @@ library TreapLib {
       max: data,
       sum: data,
       size: 1,
-      leftNodeId: self.nodeIdCounter ++,
-      rightNodeId: self.nodeIdCounter ++,
+      leftNodeId: leftNodeId,
+      rightNodeId: rightNodeId,
       priority: _random(self)
     }));
     
     int rootId = self.rootId;
     int leftId = self.nodeIdCounter ++;
     int rightId = self.nodeIdCounter ++;
+    self.nodeIdToIndex[leftId] = NULL;
+    self.nodeIdToIndex[rightId] = NULL;
+    
     console.log("Insert");
     console.log("rootId: '%d'", uint(rootId));
     console.log("nodeId: '%d'", uint(nodeId));
@@ -160,18 +170,6 @@ library TreapLib {
     _merge(self, leftId, leftId, nodeId);
     _merge(self, rootId, leftId, rightId);
     return true;
-  }
-
-  function _getSize(Treap storage self, int curNodeId) 
-    private
-    view
-    returns (int) 
-  {
-    int curIndex = self.nodeIdToIndex[curNodeId];
-    if (curIndex == NULL) {
-      return 0;
-    }
-    return self.nodes[uint(curIndex)].size;
   }
 
   function _update(Treap storage self, int curNodeId)

@@ -30,10 +30,16 @@ describe("TreapImpl", function() {
     await Treap.push(5);
     await Treap.insert(3, 3);
 
-    await wait(10);
+    await wait(100);
+    await Treap.show();
+    await wait(100);
+    
     await Treap.access(1);
+    await wait(100);
+    
+
 
     console.log((await Treap.getLastAccessed()).toString());
-    expect(await Treap.getLastAccessed()).be.equal(15);
+    expect(await Treap.getLastAccessed()).be.equal(14);
   });
 });
