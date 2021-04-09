@@ -73,7 +73,7 @@ library TreapLib {
   }
 
   function _getValue(Treap storage self, int curNodeId)
-    internal
+    private
     view
     returns (int)
   {
