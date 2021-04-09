@@ -1,14 +1,20 @@
 const { expect } = require("chai");
 
-describe("Greeter", function() {
-  it("Should return the new greeting once it's changed", async function() {
-    const Greeter = await ethers.getContractFactory("Greeter");
-    const greeter = await Greeter.deploy("Hello, world!");
-    
-    await greeter.deployed();
-    expect(await greeter.greet()).to.equal("Hello, world!");
+describe("TreapImpl", function() {
+  it("should test treap", async function() {
+    const TreapLibContract = await ethers.getContractFactory("TreapLib");
+    const TreapLib = await TreapLibContract.deploy();
+    await TreapLib.deployed();
 
-    await greeter.setGreeting("Hola, mundo!");
-    expect(await greeter.greet()).to.equal("Hola, mundo!");
+    const TreapImplContract = await ethers.getContractFactory("TreapImpl", {
+      libraries: {
+        TreapLib: TreapLib.address
+      }
+    });
+
+    const Treap = await TreapImplContract.deploy();
+    
+    await Treap.deployed();
+    await Treap.insert(15);
   });
 });
