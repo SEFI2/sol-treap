@@ -35,6 +35,5 @@ describe("TreapImpl", function() {
 
     console.log((await Treap.getLastAccessed()).toString());
     expect(await Treap.getLastAccessed()).be.equal(15);
-    await Treap.show();
   });
 });

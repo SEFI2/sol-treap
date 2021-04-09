@@ -59,32 +59,18 @@ library TreapLib {
     return root.size;
   }
 
-  function traverseAndShow(Treap storage self, int curNodeId)
-    public
-    view
-  {
-    int curIndex = self.nodeIdToIndex[curNodeId];
-    console.log("Traverse");
-    console.log("curIndex: '%d', curNodeId: '%d'", uint(curIndex), uint(curNodeId));
-    if (curIndex == NULL) {
-      return;
-    }
-
-    Node memory node = self.nodes[uint(curIndex)];
-    
-    console.log("leftNodeId: '%d', rightNodeId: '%d'", uint(node.leftNodeId), uint(node.rightNodeId));
-    console.log("");
-    traverseAndShow(self, node.leftNodeId);
-    console.log("Node Value: '%d'", uint(node.value));
-    traverseAndShow(self, node.rightNodeId);
-  }
-
   function _getValue(Treap storage self, int curNodeId)
     internal
     view
     returns (int)
   {
+    int curIndex = self.nodeIdToIndex[curNodeId];
+    if (curIndex == NULL) {
+      return -1;
+    }
 
+    Node memory node = self.nodes[uint(curIndex)];
+    return node.value;
   }
 
   function get(Treap storage self, int index)
@@ -105,6 +91,40 @@ library TreapLib {
     _merge(self, leftId, leftId, midId);
     _merge(self, rootId, leftId, rightId);
     return val;
+  }
+
+  function getRight(Treap storage self, int curNodeId)
+    public
+    view
+    returns (int)
+  {
+    int curIndex = self.nodeIdToIndex[curNodeId];
+    if (curIndex == NULL) {
+      return -1;
+    }
+
+    Node memory node = self.nodes[uint(curIndex)];
+    return node.rightNodeId;
+  }
+
+  function traverseAndShow(Treap storage self, int curNodeId)
+    public
+    view
+  {
+    int curIndex = self.nodeIdToIndex[curNodeId];
+    console.log("Traverse");
+    console.log("curIndex: '%d', curNodeId: '%d'", uint(curIndex), uint(curNodeId));
+    if (curIndex == NULL) {
+      return;
+    }
+
+    Node memory node = self.nodes[uint(curIndex)];
+    
+    console.log("leftNodeId: '%d', rightNodeId: '%d'", uint(node.leftNodeId), uint(node.rightNodeId));
+    console.log("");
+    traverseAndShow(self, node.leftNodeId);
+    console.log("Node Value: '%d'", uint(node.value));
+    traverseAndShow(self, node.rightNodeId);
   }
 
   function insert(Treap storage self, int index, int data)

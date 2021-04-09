@@ -8,6 +8,7 @@ contract TreapImpl {
   using TreapLib for TreapLib.Treap;
   TreapLib.Treap private _treap;
   int private _lastAccessedValue;
+
   constructor() {
     _treap.init();
   }
