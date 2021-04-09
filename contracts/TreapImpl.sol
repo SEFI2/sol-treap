@@ -8,12 +8,16 @@ contract TreapImpl {
   using TreapLib for TreapLib.Treap;
   TreapLib.Treap private _treap;
 
+  constructor() {
+    _treap.init();
+  }
+
   function push(int value)
     public
     returns (bool)
   {
     int length = _treap.length();
-    return _treap.insert(length - 1, value);
+    return _treap.insert(length, value);
   }
 
   function insert(int index, int value)
@@ -31,4 +35,10 @@ contract TreapImpl {
   }
 
 
+  function show()
+    public
+    view
+  {
+    _treap.traverseAndShow(_treap.rootId);
+  }
 }

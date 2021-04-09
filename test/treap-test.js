@@ -15,6 +15,13 @@ describe("TreapImpl", function() {
     const Treap = await TreapImplContract.deploy();
     
     await Treap.deployed();
-    await Treap.insert(15);
+    await Treap.push(15);
+    await Treap.push(14);
+    await Treap.push(17);
+    await Treap.push(11);
+    await Treap.push(5);
+    await Treap.insert(3, 3);
+    
+    await Treap.show();
   });
 });
