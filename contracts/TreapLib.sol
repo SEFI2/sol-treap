@@ -20,9 +20,9 @@ library TreapLib {
   struct Treap {
     int rootId;
 
-    mapping (int => int) nodeIdToIndex;
+    mapping (int => Node) nodes;
     int nodeIdCounter;
-    Node[] nodes;
+    // Node[] nodes;
   }
 
   function init(Treap storage self)
@@ -51,38 +51,24 @@ library TreapLib {
     view
     returns (int)
   {
-    int curIndex = self.nodeIdToIndex[self.rootId];
-    if (curIndex == NULL) {
-      return 0;
-    }
-
-    Node storage root = self.nodes[uint(curIndex)];
+    Node storage root = self.nodes[self.rootId];
     return root.size;
   }
 
-  function _getSize(Treap storage self, int curNodeId) 
+  function _getSize(Treap storage self, int nodeId) 
     private
     view
     returns (int) 
   {
-    int curIndex = self.nodeIdToIndex[curNodeId];
-    if (curIndex == NULL) {
-      return 0;
-    }
-    return self.nodes[uint(curIndex)].size;
+    return self.nodes[nodeId].size;
   }
 
-  function _getValue(Treap storage self, int curNodeId)
+  function _getValue(Treap storage self, int nodeId)
     private
     view
     returns (int)
   {
-    int curIndex = self.nodeIdToIndex[curNodeId];
-    if (curIndex == NULL) {
-      return -111111;
-    }
-
-    Node memory node = self.nodes[uint(curIndex)];
+    Node memory node = self.nodes[nodeId];
     return node.value;
   }
 
@@ -94,9 +80,9 @@ library TreapLib {
     int leftId = self.nodeIdCounter ++;
     int rightId = self.nodeIdCounter ++;
     int midId = self.nodeIdCounter ++;
-    self.nodeIdToIndex[leftId] = NULL;
-    self.nodeIdToIndex[rightId] = NULL;
-    self.nodeIdToIndex[midId] = NULL;
+    self.nodes[leftId] = Node({notNull: false});
+    self.nodes[rightId] = Node({notNull: false});
+    self.nodes[midId] = Node({notNull: false});
     
     _split(self, rootId, leftId, rightId, index - 1, 0);
     _split(self, rightId, midId, rightId, index, 0);
@@ -109,18 +95,14 @@ library TreapLib {
     return val;
   }
 
-  function traverseAndShow(Treap storage self, int curNodeId)
+  function traverseAndShow(Treap storage self, int nodeId)
     public
     view
   {
-    int curIndex = self.nodeIdToIndex[curNodeId];
-    console.log("Traverse");
-    console.log("curIndex: '%d', curNodeId: '%d'", uint(curIndex), uint(curNodeId));
-    if (curIndex == NULL) {
+    Node memory node = self.nodes[nodeId];
+    if (node.notNull == false) {
       return;
     }
-
-    Node memory node = self.nodes[uint(curIndex)];
     
     console.log("leftNodeId: '%d', rightNodeId: '%d'", uint(node.leftNodeId), uint(node.rightNodeId));
     console.log("");
@@ -138,11 +120,11 @@ library TreapLib {
     int rightNodeId = self.nodeIdCounter ++;
     int nodeIndex = int(self.nodes.length);
     
-    self.nodeIdToIndex[nodeId] = nodeIndex;
-    self.nodeIdToIndex[leftNodeId] = NULL;
-    self.nodeIdToIndex[rightNodeId] = NULL;
+    self.nodes[nodeId] = nodeIndex;
+    self.nodes[leftNodeId] = Node({notNull: false});
+    self.nodes[rightNodeId] = Node({notNull: false});
     
-    self.nodes.push(Node({
+    self.nodes[nodeId] = Node({
       value: data,
       min: data,
       max: data,
@@ -151,13 +133,13 @@ library TreapLib {
       leftNodeId: leftNodeId,
       rightNodeId: rightNodeId,
       priority: _random(self)
-    }));
+    });
     
     int rootId = self.rootId;
     int leftId = self.nodeIdCounter ++;
     int rightId = self.nodeIdCounter ++;
-    self.nodeIdToIndex[leftId] = NULL;
-    self.nodeIdToIndex[rightId] = NULL;
+    self.nodes[leftId] = Node({notNull: false});
+    self.nodeIdToIndex[rightId] = Node({notNull: false});
     
     console.log("Insert");
     console.log("rootId: '%d'", uint(rootId));
@@ -172,39 +154,28 @@ library TreapLib {
     return true;
   }
 
-  function _update(Treap storage self, int curNodeId)
+  function _update(Treap storage self, int nodeId)
     private
   {
-    int curIndex = self.nodeIdToIndex[curNodeId];
-    if (curIndex == NULL) {
-      return;
-    }
-
-    Node storage current = self.nodes[uint(curIndex)];
+    Node storage current = self.nodes[nodeId];
     current.size = 1;
     current.size += _getSize(self, current.leftNodeId);
     current.size += _getSize(self, current.rightNodeId);
   }
 
-  function _merge(Treap storage self, int curNodeId, int leftNodeId, int rightNodeId)
+  function _merge(Treap storage self, int nodeId, int leftNodeId, int rightNodeId)
     private
     returns (bool)
   {
-    int leftIndex = self.nodeIdToIndex[leftNodeId];
-    int rightIndex = self.nodeIdToIndex[rightNodeId];
-    if (leftIndex == NULL && rightIndex == NULL) {
-      return true;
-    }
-
-    if (leftIndex == NULL) { 
-      self.nodeIdToIndex[curNodeId] = self.nodeIdToIndex[rightNodeId];
+    if (self.nodes[leftNodeId].notNull == false) { 
+      self.nodes[nodeId] = self.nodes[rightNodeId];
       console.log("Left is NULL");
       console.log("");
       return true;
     }
     
-    if (rightIndex == NULL) {
-      self.nodeIdToIndex[curNodeId] = self.nodeIdToIndex[leftNodeId];
+    if (self.nodes[rightNodeId].notNull == false) {
+      self.nodes[nodeId] = self.nodes[leftNodeId];
       console.log("Right is NULL");
       console.log("");
       return true;
@@ -218,8 +189,8 @@ library TreapLib {
     console.log("rightIndex: '%d'", uint(rightIndex));
     console.log("");
     
-    Node memory left = self.nodes[uint(leftIndex)];
-    Node memory right = self.nodes[uint(rightIndex)];
+    Node memory left = self.nodes[leftNodeId];
+    Node memory right = self.nodes[rightNodeId];
     
     if (left.size == 0 || right.size == 0) {
       console.log("Very strange :(");
