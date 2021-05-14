@@ -14,6 +14,8 @@ library TreapLib {
 
     int leftNodeId;
     int rightNodeId;
+
+    bool notNull;
   }
   int private constant NULL = -1;
 
@@ -22,7 +24,6 @@ library TreapLib {
 
     mapping (int => Node) nodes;
     int nodeIdCounter;
-    // Node[] nodes;
   }
 
   function init(Treap storage self)
@@ -31,7 +32,7 @@ library TreapLib {
     self.rootId = 0;
     self.nodeIdCounter = 1;
  
-    self.nodeIdToIndex[self.rootId] = NULL;
+    self.nodes[self.rootId].notNull = false;
     /*
     self.nodes.push(Node({
       value: 0,
@@ -80,9 +81,9 @@ library TreapLib {
     int leftId = self.nodeIdCounter ++;
     int rightId = self.nodeIdCounter ++;
     int midId = self.nodeIdCounter ++;
-    self.nodes[leftId] = Node({notNull: false});
-    self.nodes[rightId] = Node({notNull: false});
-    self.nodes[midId] = Node({notNull: false});
+    self.nodes[leftId].notNull = false;
+    self.nodes[rightId].notNull = false;
+    self.nodes[midId].notNull = false;
     
     _split(self, rootId, leftId, rightId, index - 1, 0);
     _split(self, rightId, midId, rightId, index, 0);
@@ -118,11 +119,10 @@ library TreapLib {
     int nodeId = self.nodeIdCounter ++;
     int leftNodeId = self.nodeIdCounter ++;
     int rightNodeId = self.nodeIdCounter ++;
-    int nodeIndex = int(self.nodes.length);
     
-    self.nodes[nodeId] = nodeIndex;
-    self.nodes[leftNodeId] = Node({notNull: false});
-    self.nodes[rightNodeId] = Node({notNull: false});
+    // self.nodes[nodeId] = ;
+    self.nodes[leftNodeId].notNull = false;
+    self.nodes[rightNodeId].notNull = false;
     
     self.nodes[nodeId] = Node({
       value: data,
@@ -132,15 +132,15 @@ library TreapLib {
       size: 1,
       leftNodeId: leftNodeId,
       rightNodeId: rightNodeId,
-      priority: _random(self)
+      priority: _random(self),
+      notNull: true
     });
     
     int rootId = self.rootId;
     int leftId = self.nodeIdCounter ++;
     int rightId = self.nodeIdCounter ++;
-    self.nodes[leftId] = Node({notNull: false});
-    self.nodeIdToIndex[rightId] = Node({notNull: false});
-    
+    self.nodes[leftId].notNull = false;
+   
     console.log("Insert");
     console.log("rootId: '%d'", uint(rootId));
     console.log("nodeId: '%d'", uint(nodeId));
@@ -182,11 +182,9 @@ library TreapLib {
     }
 
     console.log("Merge:");
-    console.log("curNodeId: '%d'", uint(curNodeId));
+    console.log("nodeId: '%d'", uint(nodeId));
     console.log("leftNodeId: '%d'", uint(leftNodeId));
     console.log("rightNodeId: '%d'", uint(rightNodeId));
-    console.log("leftIndex: '%d'", uint(leftIndex));
-    console.log("rightIndex: '%d'", uint(rightIndex));
     console.log("");
     
     Node memory left = self.nodes[leftNodeId];
@@ -199,37 +197,34 @@ library TreapLib {
     
     if (left.priority < right.priority) {
       _merge(self, right.leftNodeId, leftNodeId, right.leftNodeId);
-      self.nodeIdToIndex[curNodeId] = self.nodeIdToIndex[rightNodeId];
+      self.nodes[nodeId] = self.nodes[rightNodeId];
     } else {
       _merge(self, left.rightNodeId, left.rightNodeId, rightNodeId);
-      self.nodeIdToIndex[curNodeId] = self.nodeIdToIndex[leftNodeId];
+      self.nodes[nodeId] = self.nodes[leftNodeId];
     }
 
-    _update(self, curNodeId);
+    _update(self, nodeId);
     return true;
   }
 
 
 
-  function _split(Treap storage self, int curNodeId, int leftNodeId, int rightNodeId, int index, int add)
+  function _split(Treap storage self, int nodeId, int leftNodeId, int rightNodeId, int index, int add)
     private
     returns (bool)
   {
-
-    int curIndex = self.nodeIdToIndex[curNodeId];
-    if (curIndex == NULL) {
-      self.nodeIdToIndex[leftNodeId] = self.nodeIdToIndex[rightNodeId] = NULL;
+    if (self.nodes[nodeId].notNull == false) { 
+      self.nodes[leftNodeId].notNull = self.nodes[rightNodeId].notNull = false;
       return true;
     }
     
     console.log("Split");
-    console.log("curIndex: '%d'", uint(curIndex));
-    console.log("curNodeId: '%d'", uint(curNodeId));
+    console.log("nodeId: '%d'", uint(nodeId));
     console.log("leftNodeId: '%d'", uint(leftNodeId));
     console.log("rightNodeId: '%d'", uint(rightNodeId));
     console.log("");
   
-    Node memory current = self.nodes[uint(curIndex)];
+    Node memory current = self.nodes[nodeId];
     if (current.size == 0) {
       console.log("Something strange...");
       return false;
@@ -238,17 +233,17 @@ library TreapLib {
     int accIndex = add + _getSize(self, current.leftNodeId);
     if (accIndex <= index) {
       _split(self, current.rightNodeId, current.rightNodeId, rightNodeId, index, accIndex + 1);
-      self.nodeIdToIndex[leftNodeId] = self.nodeIdToIndex[curNodeId];
+      self.nodes[leftNodeId] = self.nodes[nodeId];
     } else {
       _split(self, current.leftNodeId, leftNodeId, current.leftNodeId, index, add);
-      self.nodeIdToIndex[rightNodeId] = self.nodeIdToIndex[curNodeId];
+      self.nodes[rightNodeId] = self.nodes[nodeId];
     }
   
-    _update(self, curNodeId);
+    _update(self, nodeId);
     return true;
   }
   
-  function _random(Treap storage self) view private returns (int) {
+  function _random(Treap storage self) private view returns (int) {
     return int(uint(
       keccak256(
         abi.encodePacked(

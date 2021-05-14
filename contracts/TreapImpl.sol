@@ -31,7 +31,7 @@ contract TreapImpl {
   function access(int index)
     public
   {
-     _lastAccessedValue = _treap.get(index);
+    _lastAccessedValue = _treap.get(index);
   }
 
   function getLastAccessed()

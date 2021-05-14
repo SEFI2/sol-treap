@@ -23,19 +23,25 @@ describe("TreapImpl", function() {
     const Treap = await TreapImplContract.deploy();
     
     await Treap.deployed();
+    await wait(1500);
     await Treap.push(15);
+    await wait(1500);
     await Treap.push(14);
+    await wait(1500);
     await Treap.push(17);
+    await wait(1500);
     await Treap.push(11);
+    await wait(1500);
     await Treap.push(5);
+    await wait(1500);
     await Treap.insert(3, 3);
+    await wait(1500);
 
-    await wait(100);
     await Treap.show();
-    await wait(100);
+    await wait(1500);
     
     await Treap.access(1);
-    await wait(100);
+    await wait(1500);
     
 
 
